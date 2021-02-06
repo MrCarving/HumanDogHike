@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Dog and Balls simulation</title>
+    
+    <style>
+      #mycanvas {color:blue}
+     
+      .column1{
+        position:absolute;
+        height:20px; 
+        top:30px;
+        left:1000px;
+        text-align:left;
+        
+        
+
+      
+      }
+      
+
+
+    </style>
+</head>
+<body>
+<div class = "column1">
+    <h1 style='top:0px'>
+        Input your Data below:
+    </h1>
+    <p>Please enter your data and click "submit" to start the simulation</p>
+    <label for="input2">Your Velocity</label>
+    <input id="input2" type="text" ><br><br>
+    <label for="input1">Dog Velocity</label>
+    <input id="input1" type="text" > <br><br>
+    <label for="input3">Dog Deceleration</label>
+    <input id="input3" type="text" > <br><br>
+   
+    
+
+    
+    <button  id="button2">Submit!</button><br><br>
+    <div id = "output">Output:</div>
+</div>
+
+    
+    
+    <p> 
+       
+          <canvas id="mycanvas" style="position:absolute; top: 20px; left:20px; border:1px solid #000000"></canvas> 
+    </p>
+   
+</body>
+<script>
+
+const ipcRenderer = require('electron').ipcRenderer;
+
+
+
+ButtonSendName = document.getElementById('button2');
+ButtonSendName.addEventListener('click', (event) => {
+  if (document.getElementById('input2').value >= 1){
+  ipcRenderer.send('input1', document.getElementById('input1').value);
+  ipcRenderer.send('input2', document.getElementById('input2').value);
+  ipcRenderer.send('input3', document.getElementById('input3').value);
+  }
+})
+
+
+
+</script>
+<script src="https://cdn.jsdelivr.net/processing.js/1.4.8/processing.min.js"></script>
+<script>
+    var sketchProc = function(processingInstance) {
+     with (processingInstance) {
+        size(860,860); 
+        frameRate(60);
+        scale(1, -1);
+        translate(0, -height); 
+        background(0,255,0);
+        fill(200,150,100);
+        angleMode = "radians";
+        noStroke();
+        ellipse(width,height,100,100);
+
+
+    
+       
+
+      var timer = 0;
+       var spMod = 0;
+       var humanSp = 0;
+        var DistToDog = 0;
+        var AccelChange = 0;
+        var control = 0;
+        var submit =  document.getElementById("button2");
+        var dogAccel = 0;
+        var start= 0;
+        var humSpeed = 0;
+        var dogSpeed = 0;
+        var trpoints = 1;
+       
+        
+        var mouseX1 = [0];
+        var mouseY1 = [height];
+        var i= 0;
+        var opStart = 0;
+     
+    
+    
+       var Dog = function() {
+          this.x = 0;
+          this.y = 0;
+
+          this.tx = 0;
+          this.ty = 100000;
+          this.range = 0;
+          this.helpRange =0;
+          this.accel = 0;
+      };
+
+      var Human = function(){
+        this.x = 0;
+        this.y = 0;
+        
+       this.a = [0]
+        this.counter = 0;
+        this.angle = [];
+      };
+    Dog.prototype.display = function() {
+        stroke(0, 0, 0);
+        strokeWeight(4);
+        point(this.x, this.y);
+     
+    };
+    Human.prototype.display = function() {
+      stroke(255,0,0);
+      strokeWeight(10);
+
+      point(this.x,this.y);
+    };
+    
+    Dog.prototype.walk = function(x) {
+      
+      this.tx += x/1000; 
+      this.ty -= x/1000; 
+
+    };
+
+    Human.prototype.walk = function(x) {
+    if ((mouseX1[opStart]- mouseX1[opStart-1])<0){
+      this.x-=x;
+    
+    } else{
+      this.x+=x;
+    };
+    
+      
+ 
+  
+    };
+
+  
+  var human = new Human();
+  var dog = new Dog();
+
+  var dogLine = function(){
+  stroke(0, 0, 0);
+  strokeWeight(4);
+  var dog1y = map(noise(dog.ty+0.006,dog.ty+0.006), 0, 1,human.y - dogSpeed*14, human.y + dogSpeed*17);
+  var dog1x = map(noise(dog.tx-0.006,dog.tx-0.006), 0, 1,dog.range,dog.helpRange);
+  line(dog1x,dog1y, dog.x, dog.y);
+  };
+
+  var humLine = function(){
+  stroke(255,0,0);
+  strokeWeight(10);
+  if (human.counter ==0){
+    line(human.x - humSpeed, human.x * human.angle[opStart-1], human.x, human.y)
+  }else if(human.counter == opStart-1 ){
+    line(human.x - humSpeed, human.a[opStart-2]+human.x * human.angle[opStart-1], human.x, human.y);
+   // line(human.x,human.y,mouseX1[opStart-1],height - mouseY1[opStart-1]);
+
+
+  };
+ 
+  };
+  var CalcResult = function(hum,dogV,dogA){
+      var DogDist;
+      var humDist;
+      var Vel ;
+      var t;
+      var tmr;
+    if(dogV == hum){
+      DogDist = (dogV/ dogA) * (dogV - hum) - (1/(2*dogA))*(dogV - hum)**2 + hum* (dogA * timer - dogV + hum)/dogA;
+    } else{
+      DogDist = dogV * timer - dogA*timer*timer/2;
+    };
+
+     
+   
+     Vel = (dogV - dogA*timer )* 1000;
+     humDist = hum*timer*4000/1.6;
+     DogDist = DogDist*1000/1.6;
+     Vel = round(Vel)/1000;
+     humDist = round(humDist)/1000;
+     DogDist = round(DogDist)/1000;
+     tmr = timer*100/1.13;
+     tmr = round(tmr)/100;
+  
+   
+    document.getElementById('output').innerHTML ="<strong>Output:</strong> <br><br>" +  "Dog Velocity: " + Vel + " km/h" + "<br><br>"+  "Human Distance Traveled: " + humDist + " km" +  "<br><br>"  + "Dog Distance Traveled: "  + DogDist+ " km" + "<br><br>"+"Time: "+ tmr +" hours";
+
+   
+
+    
+
+    
+   
+     
+
+  };
+
+  
+  mouseClicked = function(){
+
+   i++;
+    if(mouseX>=width-60 &&(height - mouseY) >=height-60){
+      trpoints = i;
+    } else{
+      trpoints++;
+    };
+if (i<trpoints){
+  mouseX1.push(mouseX);
+    mouseY1.push(mouseY);
+    strokeWeight(50);
+    stroke(173,255,47);
+  line(mouseX1[i-1],height - mouseY1[i-1],mouseX1[i],height - mouseY1[i]);
+  
+    human.angle.push((((height - mouseY1[i])) - (height - mouseY1[i-1]))/(mouseX1[i]- mouseX1[i-1]));
+  
+
+  
+}else if(i==trpoints){
+  strokeWeight(50);
+    stroke(173,255,47);
+  line(mouseX1[i-1],height - mouseY1[i-1],width, height);
+  human.angle.push((height - (height - mouseY1[i-1]))/(width - mouseX1[i-1]));
+};
+   
+   
+
+   
+     
+
+
+};
+
+var operationStart = function(){
+
+var cl = 0;
+  if (human.x < mouseX1[opStart]+10 && human.x >= mouseX1[opStart]-10 && human.y < (height - mouseY1[opStart])+10 &&human.y >= (height - mouseY1[opStart])-10){
+    strokeWeight(10);
+    stroke(255,0,0);
+    
+    cl = 1;
+    human.x = mouseX1[opStart];
+    human.y =height - mouseY1[opStart];
+    opStart++;
+    human.counter = opStart-1;
+    cl = 0;
+  };
+ 
+  if(cl == 0){
+    if (human.counter == 0){
+     human.y = human.x * human.angle[0];
+     
+    human.a[0] = human.y - human.x*human.angle[1];
+   } else if (human.counter== opStart-1 && human.counter!=0){
+     if (mouseX1[opStart]- mouseX1[opStart-1]==0){
+       human.y = humSpeed;
+     } else{
+      human.y = human.a[opStart-2]+human.x * human.angle[opStart-1];
+     };
+
+     
+     human.a[opStart-1] = human.y - human.x*human.angle[opStart];
+   };
+ 
+  };
+     
+      
+
+};
+   
+
+  
+  var startSimulation = function(){
+            
+            humSpeed = document.getElementById('input2').value;
+            humSpeed = humSpeed/2.8;
+            humanSp = humSpeed;
+            dogAccel = document.getElementById("input3").value;
+            dogAccel = dogAccel/4;
+            dog.accel = dogAccel;
+            dogSpeed = document.getElementById('input1').value;
+          
+            background(0,255,0);
+            strokeWeight(50);
+            stroke(173,255,47);
+                
+            start = 1;
+            timer = 0;
+            dog.x = 0;
+            dog.y = 0;
+            dog.tx = 0;
+            dog.ty = 10000;
+            i = 0;
+            dog.speed = dogSpeed;
+          
+            human.x = 0;
+            human.y = 0;
+            human.a = [0]
+            human.counter = 0;
+            opStart = 0;
+            document.getElementById('output').innerHTML ="<strong>Output:</strong> ";
+            for(var dogCounter = 0; dogCounter <= trpoints+1;dogCounter++){
+            if (dogCounter<trpoints){
+                  line(mouseX1[dogCounter-1],height - mouseY1[dogCounter-1],mouseX1[dogCounter],height - mouseY1[dogCounter]);
+                 
+                }else if(dogCounter==trpoints){
+                  line(mouseX1[dogCounter-1],height - mouseY1[dogCounter-1],width, height);
+                
+            
+                };
+          };
+  
+     };
+
+
+  
+    submit.addEventListener("click",startSimulation);
+   
+    
+    var moveDog = function() {
+    if (human.counter == 0){
+      spMod = atan(human.angle[0]);
+    spMod = cos(spMod);
+    } else{
+      spMod = atan(human.angle[opStart-1]);
+      spMod = cos(spMod);
+    };
+     
+    if(spMod < 0){
+      spMod = -1*spMod;
+    };
+    humSpeed = humanSp * spMod;
+      
+      
+   
+    if (dog.speed >= humSpeed){
+      if (human.y < 11.9*height/12 && human.x <11.9*width/12){
+          dogSpeed=dog.speed - dogAccel*timer;
+        if (dogSpeed <= humSpeed){
+          dogSpeed = humSpeed;
+        };
+          dog.range=human.x - dogSpeed*24;
+          dog.helpRange=human.x + dogSpeed*27;
+          
+          dog.y = map(noise(dog.ty,dog.ty), 0, 1,human.y - dogSpeed*14, human.y+dogSpeed*17);
+          dog.x = map(noise(dog.tx,dog.tx), 0, 1,dog.range,dog.helpRange);
+          dog.walk(dogSpeed);
+          human.walk(humSpeed);
+          operationStart();
+          humLine();
+          dogLine();
+        } else {
+          line(dog.x, dog.y, human.x, human.y);
+          human.walk(humSpeed);
+          dog.x = human.x;
+          dog.y = human.y;
+          CalcResult(humSpeed,dogSpeed,dogAccel);
+  
+        };
+    
+    } else {
+      document.getElementById('output').innerHTML ="The dog wont catch up!!!!"
+    };
+    
+   
+   
+   };
+  
+
+   draw = function(){
+    
+
+   
+    if (start >= 1){
+
+      human.display();
+      dog.display();
+      moveDog();
+      strokeWeight(17);
+      if(human.y < 11.999*height/12 && human.x <11.999*width/12){
+      timer+=1/600;
+     
+    } else{
+      start = 0;
+    };
+
+   };
+  };
+    }};
+
+     var canvas = document.getElementById("mycanvas"); 
+    var processingInstance = new Processing(canvas, sketchProc);
+</script>
+</html>
