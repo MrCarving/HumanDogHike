@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Dog and Balls simulation test</title>
+    
+    <style>
+      #mycanvas {color:blue}
+     
+      .column1{
+        position:absolute;
+        height:20px; 
+        left:1000px;
+        text-align:left;
+        
+        
+
+      
+      }
+
+      
+    </style>
+</head>
+<body>
+<div class = "column1">
+    <h1 style='top:0px'>
+        Input your Data below:
+    </h1>
+    <input id="input1" type="text" > 
+    <h3 id ="answer"></h3>
+    <button  id="button1" >Submit!</button>
+    <h3 id="title">Why</h3>
+    
+</div>
+    
+
+    
+    <p> 
+       
+          <canvas id="mycanvas" style="position:absolute; top: 20px; left:20px; border:1px solid #000000"></canvas> 
+    </p>
+   
+</body>
+<script>
+
+const ipcRenderer = require('electron').ipcRenderer;
+
+    ipcRenderer.on('reply', function (event, arg){
+   
+   
+});  
+
+
+
+
+
+</script>
+<script src="https://cdn.jsdelivr.net/processing.js/1.4.8/processing.min.js"></script>
+<script>
+    var sketchProc = function(processingInstance) {
+     with (processingInstance) {
+        size(900,860); 
+        frameRate(30);
+        background(0,255,0)
+        /*scale(1, -1);
+        translate(0, -height); */
+       
+        var scr = 0;
+       
+
+        
+        draw = function(){
+
+            var input1 = document.getElementById('input1').value;
+            if(input1 =="hello"){
+                document.getElementById('answer').innerHTML = "Correct";
+            } else{
+                document.getElementById('answer').innerHTML = "";
+            }
+            
+        }
+        
+
+
+        
+        
+
+   
+     }};
+
+     var canvas = document.getElementById("mycanvas"); 
+    
+    var processingInstance = new Processing(canvas, sketchProc);
+    
+
+
+    
+</script>
+
+
+</html>
+

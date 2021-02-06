@@ -1,0 +1,34 @@
+{
+  "name": "Humand_and_Dog_Hike",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+  		"dist": "electron-builder"
+},
+  
+  
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^10.1.4"
+  },
+  "dependencies": {
+    
+    "electron-packager": "^15.2.0",
+    "electron-window-manager": "^1.0.6"
+  },
+"build": {
+  "appId": "com.electron.dog",
+  "mac": {
+    "category": "dmg",
+    "icon":"images/dog.png"
+  }
+
+}
+}
+
+
